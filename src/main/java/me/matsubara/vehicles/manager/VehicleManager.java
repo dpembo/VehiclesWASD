@@ -44,6 +44,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityEvent;
 import org.bukkit.event.entity.EntityPortalEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -343,6 +344,27 @@ public class VehicleManager implements Listener {
         handleTeleportConflict(event);
     }
 
+    @EventHandler
+    public void onVehicleExit(@NotNull VehicleExitEvent event) {
+        if (!(event.getExited() instanceof Player player)) return;
+        Entity vehicleEntity = event.getVehicle();
+
+        Vehicle vehicle = getVehicleByEntity(player, true);
+        if (vehicle == null && vehicleEntity instanceof ArmorStand stand) {
+            vehicle = getVehicleByVelocityStand(stand);
+        }
+        if (vehicle == null && vehicleEntity instanceof ArmorStand stand) {
+            PersistentDataContainer pdc = stand.getPersistentDataContainer();
+            String modelIdStr = pdc.get(plugin.getVehicleModelIdKey(), PersistentDataType.STRING);
+            if (modelIdStr != null) {
+                try {
+                    vehicle = getVehicleByModelId(UUID.fromString(modelIdStr));
+                } catch (IllegalArgumentException ignored) {}
+            }
+        }
+        if (vehicle != null) handleDismount(player, vehicle);
+    }
+
     @EventHandler // We can keep using this event if we stay in 1.20.1.
     public void onEntityDismount(@NotNull EntityDismountEvent event) {
         if (!(event.getDismounted() instanceof ArmorStand stand)) return;
@@ -350,33 +372,24 @@ public class VehicleManager implements Listener {
         Entity entity = event.getEntity();
 
         Vehicle vehicle = getVehicleByEntity(entity, true);
-        
-        // Fallback 1: if we can't find the vehicle by entity, try using the armor stand (velocity stand).
-        // This is more reliable and handles cases where entity UUID tracking might fail (e.g., 1.21.6+).
-        if (vehicle == null) {
-            vehicle = getVehicleByVelocityStand(stand);
-        }
-        
-        // Fallback 2: if we still can't find it, try using the model ID from the armor stand's persistent data.
-        // This is the most robust method as it directly identifies the vehicle by its model ID.
+        if (vehicle == null) vehicle = getVehicleByVelocityStand(stand);
         if (vehicle == null) {
             PersistentDataContainer container = stand.getPersistentDataContainer();
             String modelIdStr = container.get(plugin.getVehicleModelIdKey(), PersistentDataType.STRING);
             if (modelIdStr != null) {
                 try {
-                    UUID modelId = UUID.fromString(modelIdStr);
-                    vehicle = getVehicleByModelId(modelId);
-                } catch (IllegalArgumentException ignored) {
-                    // Invalid UUID format in persistent data, continue without this fallback
-                }
+                    vehicle = getVehicleByModelId(UUID.fromString(modelIdStr));
+                } catch (IllegalArgumentException ignored) {}
             }
         }
-        
         if (vehicle != null) handleDismount(entity, vehicle);
     }
 
     private void handleDismount(@NotNull Entity entity, @NotNull Vehicle vehicle) {
         boolean driver = entity instanceof Player player && vehicle.isDriver(player);
+        boolean passenger = vehicle.isPassenger(entity);
+        // Guard: if the entity is neither the driver nor a passenger, it was already handled.
+        if (!driver && !passenger) return;
         UUID entityUUID = entity.getUniqueId();
 
         if (vehicle instanceof UpAndDown upAndDown && vehicle.is(VehicleType.HELICOPTER)) {

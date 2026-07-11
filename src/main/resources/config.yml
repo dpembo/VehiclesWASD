@@ -68,11 +68,11 @@ opposite-face-spawn: false
 close-customization-gui-if-successful: false
 
 # If true, the vehicle will be saved in the player's inventory when they exit the vehicle.
-pick-up-on-dismount: false
+pick-up-on-dismount: true
 
 # If true, the vehicle will be saved in the player's inventory.
 # If false, the vehicle will be thrown to the ground.
-pick-up-on-remove: false
+pick-up-on-remove: true
 
 # If true, the player who puts the vehicle on the ground (or water) will become the owner of the vehicle.
 place-set-owner: false

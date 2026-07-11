@@ -93,36 +93,30 @@ public final class Reflection {
     }
 
     public static @Nullable MethodHandle getMethod(Class<?> refc, String name, MethodType type, String... extraNames) {
-        return getMethod(refc, name, type, false, true, extraNames);
+        return getMethod(refc, name, type, false, false, extraNames);
     }
 
     public static @Nullable MethodHandle getMethod(Class<?> refc, String name, MethodType type, boolean isStatic, boolean printStackTrace, String... extraNames) {
-        try {
-            if (isStatic) return LOOKUP.findStatic(refc, name, type);
+        ReflectiveOperationException lastException = null;
 
-            Method method = refc.getMethod(name, type.parameterArray());
-            if (!method.getReturnType().isAssignableFrom(type.returnType())) return null;
+        // Try the primary name first, then each fallback — all silently
+        String[] allNames = (extraNames != null && extraNames.length > 0)
+                ? ArrayUtils.addFirst(extraNames, name)
+                : new String[]{name};
 
-            return LOOKUP.unreflect(method);
-        } catch (ReflectiveOperationException exception) {
-            if (extraNames != null && extraNames.length > 0) {
-                // Suppress printing for fallback attempts - will only print if all fallbacks fail
-                if (extraNames.length == 1) {
-                    return getMethod(refc, extraNames[0], type, isStatic, printStackTrace);
-                }
-                for (String extra : extraNames) {
-                    int index = ArrayUtils.indexOf(extraNames, extra);
-                    String[] rest = ArrayUtils.remove(extraNames, index);
-                    MethodHandle result = getMethod(refc, extra, type, isStatic, false, rest);
-                    if (result != null) return result;
-                }
-                // If we get here, all fallbacks failed. Print stack trace only if requested.
-                if (printStackTrace) exception.printStackTrace();
-                return null;
+        for (String n : allNames) {
+            try {
+                if (isStatic) return LOOKUP.findStatic(refc, n, type);
+                Method method = refc.getMethod(n, type.parameterArray());
+                if (method.getReturnType().isAssignableFrom(type.returnType())) return LOOKUP.unreflect(method);
+            } catch (ReflectiveOperationException e) {
+                lastException = e;
             }
-            if (printStackTrace) exception.printStackTrace();
-            return null;
         }
+
+        // All names failed — only print if explicitly requested
+        if (printStackTrace && lastException != null) lastException.printStackTrace();
+        return null;
     }
 
     public static @Nullable Class<?> getUnversionedClass(String name) {

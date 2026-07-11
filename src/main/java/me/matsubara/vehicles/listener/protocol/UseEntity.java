@@ -112,7 +112,11 @@ public final class UseEntity extends SimplePacketListenerAbstract implements Lis
             return;
         }
 
-        if (handlePreviews(player, entityId, left)) return;
+        // Prefer the sneak state from the packet — server-side player.isSneaking() can be
+        // stale in 1.21.2+ where the PLAYER_INPUT packet replaces ENTITY_ACTION for vehicles.
+        boolean sneaking = wrapper.isSneaking().orElse(player.isSneaking());
+
+        if (handlePreviews(player, entityId, left, sneaking)) return;
 
         Iterator<Vehicle> iterator = plugin.getVehicleManager().getVehicles().iterator();
         while (iterator.hasNext()) {
@@ -126,7 +130,7 @@ public final class UseEntity extends SimplePacketListenerAbstract implements Lis
                 continue;
             }
 
-            runTask(() -> handleOutsideVehicleInteract(player, vehicle, iterator, left));
+            runTask(() -> handleOutsideVehicleInteract(player, vehicle, iterator, left, sneaking));
 
             event.setCancelled(true);
             break;
@@ -298,8 +302,8 @@ public final class UseEntity extends SimplePacketListenerAbstract implements Lis
     }
 
     @SuppressWarnings("WhileLoopReplaceableByForEach")
-    private boolean handlePreviews(@NotNull Player player, int entityId, boolean left) {
-        if (!player.isSneaking() || !left) return false;
+    private boolean handlePreviews(@NotNull Player player, int entityId, boolean left, boolean sneaking) {
+        if (!sneaking || !left) return false;
 
         Collection<PreviewTick> previews = plugin.getVehicleManager().getPreviews().values();
         if (previews.isEmpty()) return false;
@@ -318,7 +322,7 @@ public final class UseEntity extends SimplePacketListenerAbstract implements Lis
         return false;
     }
 
-    private void handleOutsideVehicleInteract(@NotNull Player player, @NotNull Vehicle vehicle, Iterator<Vehicle> iterator, boolean left) {
+    private void handleOutsideVehicleInteract(@NotNull Player player, @NotNull Vehicle vehicle, Iterator<Vehicle> iterator, boolean left, boolean sneaking) {
         if (vehicle.isRemoved()) return;
 
         UUID playerUUID = player.getUniqueId();
@@ -327,7 +331,7 @@ public final class UseEntity extends SimplePacketListenerAbstract implements Lis
         boolean notOwner = !vehicle.isOwner(playerUUID);
 
         if (left) {
-            if (!player.isSneaking()) return;
+            if (!sneaking) return;
 
             if (notOwner && !player.hasPermission("vehicleswasd.remove")) {
                 messages.send(player, Messages.Message.NOT_YOUR_VEHICLE);
@@ -355,7 +359,7 @@ public final class UseEntity extends SimplePacketListenerAbstract implements Lis
         World world = player.getWorld();
         vehicle.resetRealEntities(world);
 
-        if (player.isSneaking()) {
+        if (sneaking) {
             if (notOwner) return;
 
             Pair<ArmorStand, StandSettings> primaryChair = vehicle.getChair(0);

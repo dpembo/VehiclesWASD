@@ -134,12 +134,12 @@ public final class VehiclesPlugin extends JavaPlugin {
         messages = new Messages(this);
         saveDefaultConfig();
         updateConfigs();
-        System.out.println(" =========== Methods of Entity class =========== ");
-        Class<?> ENTITY = XReflection.getNMSClass("world.entity", "Entity");
-        for (Method m : ENTITY.getDeclaredMethods()) {
-            System.out.println(m);
-        }
-        System.out.println(" =============================================== ");
+        // System.out.println(" =========== Methods of Entity class =========== ");
+        // Class<?> ENTITY = XReflection.getNMSClass("world.entity", "Entity");
+        // for (Method m : ENTITY.getDeclaredMethods()) {
+        //     System.out.println(m);
+        // }
+        // System.out.println(" =============================================== ");
     }
 
     @Override
