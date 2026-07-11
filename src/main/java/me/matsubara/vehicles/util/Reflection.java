@@ -21,10 +21,11 @@ public final class Reflection {
     private static final MethodHandles.Lookup LOOKUP = MethodHandles.lookup();
 
     public static @Nullable Object getFieldValue(MethodHandle handle) {
+        if (handle == null) return null;
         try {
             return handle.invoke();
         } catch (Throwable throwable) {
-            throwable.printStackTrace();
+            // Silently fail - the calling code will handle null values
             return null;
         }
     }
@@ -45,7 +46,7 @@ public final class Reflection {
             if (isGetter) return LOOKUP.unreflectGetter(field);
             return LOOKUP.unreflectSetter(field);
         } catch (ReflectiveOperationException exception) {
-            exception.printStackTrace();
+            // Silently fail - reflection is often used for compatibility with multiple versions
             return null;
         }
     }
@@ -57,7 +58,7 @@ public final class Reflection {
 
             return LOOKUP.unreflectConstructor(constructor);
         } catch (ReflectiveOperationException exception) {
-            exception.printStackTrace();
+            // Silently fail - constructors may not exist in all versions
             return null;
         }
     }
@@ -67,13 +68,13 @@ public final class Reflection {
             return MethodHandles.privateLookupIn(clazz, LOOKUP)
                     .findConstructor(clazz, MethodType.methodType(void.class, parameterTypes));
         } catch (Throwable throwable) {
-            throwable.printStackTrace();
+            // Silently fail - private constructors may not exist or be accessible in all versions
             return null;
         }
     }
 
     public static @Nullable MethodHandle getMethod(@NotNull Class<?> refc, String name, Class<?>... parameterTypes) {
-        return getMethod(refc, name, true, parameterTypes);
+        return getMethod(refc, name, false, parameterTypes);
     }
 
     public static @Nullable MethodHandle getMethod(@NotNull Class<?> refc, String name, boolean printStackTrace, Class<?>... parameterTypes) {
@@ -105,14 +106,19 @@ public final class Reflection {
             return LOOKUP.unreflect(method);
         } catch (ReflectiveOperationException exception) {
             if (extraNames != null && extraNames.length > 0) {
+                // Suppress printing for fallback attempts - will only print if all fallbacks fail
                 if (extraNames.length == 1) {
                     return getMethod(refc, extraNames[0], type, isStatic, printStackTrace);
                 }
                 for (String extra : extraNames) {
                     int index = ArrayUtils.indexOf(extraNames, extra);
                     String[] rest = ArrayUtils.remove(extraNames, index);
-                    return getMethod(refc, extra, type, isStatic, printStackTrace, rest);
+                    MethodHandle result = getMethod(refc, extra, type, isStatic, false, rest);
+                    if (result != null) return result;
                 }
+                // If we get here, all fallbacks failed. Print stack trace only if requested.
+                if (printStackTrace) exception.printStackTrace();
+                return null;
             }
             if (printStackTrace) exception.printStackTrace();
             return null;

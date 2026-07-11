@@ -84,13 +84,30 @@ public final class PluginUtils {
     private static final MethodHandle SET_OWNER_PROFILE = SET_PROFILE != null ? null : Reflection.getMethod(SkullMeta.class, "setOwnerProfile", false, PlayerProfile.class);
 
     private static final MethodHandle getHandle = Reflection.getMethod(Objects.requireNonNull(CRAFT_ENTITY), "getHandle");
-    private static final MethodHandle absMoveTo = Reflection.getMethod(
+    /*private static final MethodHandle absMoveTo = Reflection.getMethod(
             ENTITY,
             "a",
             MethodType.methodType(void.class, double.class, double.class, double.class, float.class, float.class),
             false,
-            false,
-            "setLocation");
+            true,
+            "setLocation",
+            "absMoveTo");*/
+    // private static final MethodHandle absMoveTo = Reflection.getMethod(
+    //     ENTITY,
+    //     "absMoveTo",
+    //     true,
+    //     double.class, double.class, double.class, float.class, float.class);
+
+    //private static final Class<?> VEC3old = Reflection.getClass("net.minecraft.world.phys.Vec3");
+    private static final MethodHandle absSnapTo = Reflection.getMethod(
+        ENTITY,
+        "absSnapTo",
+        true,
+        double.class,
+        double.class,
+        double.class,
+        float.class,
+        float.class);
 
     static {
         for (Field field : Color.class.getDeclaredFields()) {
@@ -301,12 +318,22 @@ public final class PluginUtils {
     }
 
     public static void teleportWithPassengers(@NotNull LivingEntity living, Location targetLocation) {
-        if (getHandle == null || absMoveTo == null) return;
+        if (getHandle == null || absSnapTo == null) {
+            System.err.println("Failed to teleport entity with passengers. The method handle is null.");
+            return;
+        }
 
         // We can't teleport entities with passengers with the API.
         try {
             Object nmsEntity = getHandle.invoke(CRAFT_ENTITY.cast(living));
-            absMoveTo.invoke(
+            // absMoveTo.invoke(
+            //         nmsEntity,
+            //         targetLocation.getX(),
+            //         targetLocation.getY(),
+            //         targetLocation.getZ(),
+            //         targetLocation.getYaw(),
+            //         targetLocation.getPitch());
+            absSnapTo.invoke(
                     nmsEntity,
                     targetLocation.getX(),
                     targetLocation.getY(),

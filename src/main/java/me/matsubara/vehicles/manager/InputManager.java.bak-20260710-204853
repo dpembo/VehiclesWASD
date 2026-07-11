@@ -40,7 +40,7 @@ public class InputManager extends SimplePacketListenerAbstract implements Listen
         PacketType.Play.Client type = event.getPacketType();
 
         if (type != PacketType.Play.Client.STEER_VEHICLE
-                && (!XReflection.supports(1, 21, 2) || type != PacketType.Play.Client.PLAYER_INPUT)) return;
+                && (!XReflection.supports(21, 2) || type != PacketType.Play.Client.PLAYER_INPUT)) return;
 
         if (!(event.getPlayer() instanceof Player player)) return;
 

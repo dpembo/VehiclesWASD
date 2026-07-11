@@ -62,6 +62,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.security.CodeSource;
 import java.util.*;
 import java.util.concurrent.*;
@@ -133,6 +134,12 @@ public final class VehiclesPlugin extends JavaPlugin {
         messages = new Messages(this);
         saveDefaultConfig();
         updateConfigs();
+        System.out.println(" =========== Methods of Entity class =========== ");
+        Class<?> ENTITY = XReflection.getNMSClass("world.entity", "Entity");
+        for (Method m : ENTITY.getDeclaredMethods()) {
+            System.out.println(m);
+        }
+        System.out.println(" =============================================== ");
     }
 
     @Override
@@ -141,7 +148,7 @@ public final class VehiclesPlugin extends JavaPlugin {
 
         // Disable the plugin if the server version is older than 1.17.
         PluginManager pluginManager = getServer().getPluginManager();
-        if (XReflection.MINOR_NUMBER < 17) {
+        if (!XReflection.supports(1, 17)) {
             logger.severe("This plugin only works from 1.17 and up, disabling...");
             pluginManager.disablePlugin(this);
             return;

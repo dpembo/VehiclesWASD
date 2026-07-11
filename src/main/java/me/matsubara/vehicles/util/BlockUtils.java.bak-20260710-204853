@@ -294,7 +294,7 @@ public class BlockUtils {
 
         //For some reason, these items appear lower than they should.
         ItemStack item;
-        if (XReflection.supports(1, 21, 2)
+        if (XReflection.supports(21, 2)
                 && settings.isSmall()
                 && (item = settings.getEquipment().get(ItemSlot.HEAD)) != null
                 && HEIGHT_FIX.contains(item.getType())) {
@@ -333,7 +333,7 @@ public class BlockUtils {
     }
 
     public static @Nullable Vector getClickedPosition(@NotNull PlayerInteractEvent event) {
-        if (XReflection.supports(1, 20, 1)) {
+        if (XReflection.supports(20, 1)) {
             return event.getClickedPosition();
         }
 
@@ -367,11 +367,6 @@ public class BlockUtils {
         World world = player.getWorld();
 
         try {
-            // Check if required method handles are available (compatibility check for different versions)
-            if (CLIP == null || clipConstructor == null || vec3dConstructor == null || GET_WORLD_HANDLE == null || GET_PLAYER_HANDLE == null || GET_BLOCK_POS == null || GET_LOCATION == null || GET_VEC3_X == null || GET_VEC3_Y == null || GET_VEC3_Z == null || GET_POS_X == null || GET_POS_Y == null || GET_POS_Z == null) {
-                return null;
-            }
-
             Object craftWorld = CRAFT_WORLD.cast(world);
             Object nmsWorld = GET_WORLD_HANDLE.invoke(craftWorld);
 

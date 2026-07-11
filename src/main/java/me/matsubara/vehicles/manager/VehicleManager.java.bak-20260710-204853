@@ -77,7 +77,7 @@ public class VehicleManager implements Listener {
     private final Set<UUID> conflictTeleport = new HashSet<>();
     private final Map<UUID, KeybindTask> keybindTasks = new ConcurrentHashMap<>();
 
-    public static final PlayerTeleportEvent.TeleportCause CONFLICT_CAUSE = XReflection.supports(1, 19, 3) ?
+    public static final PlayerTeleportEvent.TeleportCause CONFLICT_CAUSE = XReflection.supports(1,19, 3) ?
             PlayerTeleportEvent.TeleportCause.DISMOUNT :
             PlayerTeleportEvent.TeleportCause.UNKNOWN;
 
@@ -345,33 +345,11 @@ public class VehicleManager implements Listener {
 
     @EventHandler // We can keep using this event if we stay in 1.20.1.
     public void onEntityDismount(@NotNull EntityDismountEvent event) {
-        if (!(event.getDismounted() instanceof ArmorStand stand)) return;
+        if (!(event.getDismounted() instanceof ArmorStand)) return;
 
         Entity entity = event.getEntity();
 
         Vehicle vehicle = getVehicleByEntity(entity, true);
-        
-        // Fallback 1: if we can't find the vehicle by entity, try using the armor stand (velocity stand).
-        // This is more reliable and handles cases where entity UUID tracking might fail (e.g., 1.21.6+).
-        if (vehicle == null) {
-            vehicle = getVehicleByVelocityStand(stand);
-        }
-        
-        // Fallback 2: if we still can't find it, try using the model ID from the armor stand's persistent data.
-        // This is the most robust method as it directly identifies the vehicle by its model ID.
-        if (vehicle == null) {
-            PersistentDataContainer container = stand.getPersistentDataContainer();
-            String modelIdStr = container.get(plugin.getVehicleModelIdKey(), PersistentDataType.STRING);
-            if (modelIdStr != null) {
-                try {
-                    UUID modelId = UUID.fromString(modelIdStr);
-                    vehicle = getVehicleByModelId(modelId);
-                } catch (IllegalArgumentException ignored) {
-                    // Invalid UUID format in persistent data, continue without this fallback
-                }
-            }
-        }
-        
         if (vehicle != null) handleDismount(entity, vehicle);
     }
 

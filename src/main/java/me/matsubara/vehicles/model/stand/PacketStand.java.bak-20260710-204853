@@ -165,13 +165,13 @@ public final class PacketStand implements IStand {
         DATA_WATCHER_REGISTRY = Reflection.getNMSClass("network.syncher", "EntityDataSerializers", "DataWatcherRegistry");
         ENTITY_TYPES = Reflection.getNMSClass("world.entity", "EntityType", "EntityTypes");
         VEC_3D = Reflection.getNMSClass("world.phys", "Vec3", "Vec3D");
-        STREAM_ENCODER = XReflection.supports(1, 20, 6) ? Reflection.getNMSClass("network.codec", "StreamEncoder") : null;
-        REGISTRY_FRIENDLY_BYTE_BUF = XReflection.supports(1, 20, 6) ? Reflection.getNMSClass("network", "RegistryFriendlyByteBuf") : null;
-        REGISTRY_ACCESS = XReflection.supports(1, 20, 6) ? Reflection.getNMSClass("core", "RegistryAccess", "IRegistryCustom") : null;
-        IMMUTABLE_REGISTRY_ACCESS = XReflection.supports(1, 20, 6) ? Reflection.getNMSClass("core", "RegistryAccess$ImmutableRegistryAccess", "IRegistryCustom$c") : null;
-        BUILT_IN_REGISTRIES = XReflection.supports(1, 20, 6) ? Reflection.getNMSClass("core.registries", "BuiltInRegistries") : null;
-        DEFAULTED_REGISTRY = XReflection.supports(1, 19, 3) ? Reflection.getNMSClass("core", "DefaultedRegistry", "RegistryBlocks") : null;
-        POSITION_MOVE_ROTATION = XReflection.supports(1, 21, 2) ? Reflection.getNMSClass("world.entity", "PositionMoveRotation", "PositionMoveRotation") : null;
+        STREAM_ENCODER = XReflection.supports(20, 6) ? Reflection.getNMSClass("network.codec", "StreamEncoder") : null;
+        REGISTRY_FRIENDLY_BYTE_BUF = XReflection.supports(20, 6) ? Reflection.getNMSClass("network", "RegistryFriendlyByteBuf") : null;
+        REGISTRY_ACCESS = XReflection.supports(20, 6) ? Reflection.getNMSClass("core", "RegistryAccess", "IRegistryCustom") : null;
+        IMMUTABLE_REGISTRY_ACCESS = XReflection.supports(20, 6) ? Reflection.getNMSClass("core", "RegistryAccess$ImmutableRegistryAccess", "IRegistryCustom$c") : null;
+        BUILT_IN_REGISTRIES = XReflection.supports(20, 6) ? Reflection.getNMSClass("core.registries", "BuiltInRegistries") : null;
+        DEFAULTED_REGISTRY = XReflection.supports(19, 3) ? Reflection.getNMSClass("core", "DefaultedRegistry", "RegistryBlocks") : null;
+        POSITION_MOVE_ROTATION = XReflection.supports(21, 2) ? Reflection.getNMSClass("world.entity", "PositionMoveRotation", "PositionMoveRotation") : null;
         ENTITY_PLAYER = Reflection.getNMSClass("server.level", "ServerPlayer", "EntityPlayer");
         CRAFT_PLAYER = Reflection.getCraftClass("entity", "CraftPlayer");
         SERVER_PLAYER_CONNECTION = Reflection.getNMSClass("server.network", "ServerPlayerConnection", "PlayerConnection");
@@ -183,9 +183,9 @@ public final class PacketStand implements IStand {
         of = (PAIR == null) ? null : Reflection.getMethod(PAIR, "of", MethodType.methodType(PAIR, Object.class, Object.class), true, true);
         fromStringOrNull = (CRAFT_CHAT_MESSAGE == null) ? null : Reflection.getMethod(CRAFT_CHAT_MESSAGE, "fromStringOrNull", MethodType.methodType(I_CHAT_BASE_COMPONENT, String.class), true, true);
 
-        if (XReflection.supports(1, 20, 6)) {
+        if (XReflection.supports(20, 6)) {
             writeInt = Reflection.getMethod(PACKET_DATA_SERIALIZER, "c", MethodType.methodType(PACKET_DATA_SERIALIZER, int.class), "writeVarInt");
-        } else if (XReflection.supports(1, 20, 2)) {
+        } else if (XReflection.supports(20, 2)) {
             writeInt = Reflection.getMethod(PACKET_DATA_SERIALIZER, "c", int.class);
         } else {
             writeInt = Reflection.getMethod(PACKET_DATA_SERIALIZER, "d", int.class);
@@ -200,9 +200,9 @@ public final class PacketStand implements IStand {
         getSerializer = Reflection.getMethod(DATA_WATCHER_OBJECT, "b", MethodType.methodType(DATA_WATCHER_SERIALIZER), "serializer");
         getIndex = Reflection.getMethod(DATA_WATCHER_OBJECT, "a", MethodType.methodType(int.class), "id");
         getTypeId = Reflection.getMethod(DATA_WATCHER_REGISTRY, "b", MethodType.methodType(int.class, DATA_WATCHER_SERIALIZER), true, true, "getSerializedId");
-        serialize = XReflection.supports(1, 20, 6) ? null : Reflection.getMethod(DATA_WATCHER_SERIALIZER, "a", PACKET_DATA_SERIALIZER, Object.class);
+        serialize = XReflection.supports(20, 6) ? null : Reflection.getMethod(DATA_WATCHER_SERIALIZER, "a", PACKET_DATA_SERIALIZER, Object.class);
         byString = Reflection.getMethod(ENTITY_TYPES, "a", MethodType.methodType(Optional.class, String.class), true, true, "byString");
-        codec = XReflection.supports(1, 20, 6) ? Reflection.getMethod(DATA_WATCHER_SERIALIZER, "codec") : null;
+        codec = XReflection.supports(20, 6) ? Reflection.getMethod(DATA_WATCHER_SERIALIZER, "codec") : null;
         encode = STREAM_ENCODER != null ? Reflection.getMethod(STREAM_ENCODER, "encode", Object.class, Object.class) : null;
         getHandle = Reflection.getMethod(CRAFT_PLAYER, "getHandle");
         sendPacket = Reflection.getMethod(SERVER_PLAYER_CONNECTION, "send", MethodType.methodType(void.class, PACKET), "b", "a", "sendPacket");
@@ -240,7 +240,7 @@ public final class PacketStand implements IStand {
         } else {
             packetSpawnEntityLiving = Reflection.getPrivateConstructor(PACKET_SPAWN_ENTITY_LIVING, PACKET_DATA_SERIALIZER);
         }
-        packetEntityTeleport = XReflection.supports(1, 21, 2) ?
+        packetEntityTeleport = XReflection.supports(21, 2) ?
                 Reflection.getConstructor(PACKET_ENTITY_TELEPORT, int.class, POSITION_MOVE_ROTATION, Set.class, boolean.class)
                 : Reflection.getPrivateConstructor(PACKET_ENTITY_TELEPORT, PACKET_DATA_SERIALIZER);
         packetEntityEquipment = (XReflection.supports(1, 16)) ?
@@ -249,7 +249,7 @@ public final class PacketStand implements IStand {
         packetEntityDestroy = Reflection.getConstructor(PACKET_ENTITY_DESTROY, PROTOCOL == 755 ? int.class : int[].class);
         vector3f = Reflection.getConstructor(VECTOR3F, float.class, float.class, float.class);
         packetDataSerializer = Reflection.getPrivateConstructor(PACKET_DATA_SERIALIZER, ByteBuf.class);
-        packetEntityMetadata = Reflection.getPrivateConstructor(PACKET_ENTITY_METADATA, XReflection.supports(1, 20, 6) ? REGISTRY_FRIENDLY_BYTE_BUF : PACKET_DATA_SERIALIZER);
+        packetEntityMetadata = Reflection.getPrivateConstructor(PACKET_ENTITY_METADATA, XReflection.supports(20, 6) ? REGISTRY_FRIENDLY_BYTE_BUF : PACKET_DATA_SERIALIZER);
         dataWatcherItem = Reflection.getConstructor(DATA_WATCHER_ITEM, DATA_WATCHER_OBJECT, Object.class);
         registryFriendlyByteBuf = REGISTRY_FRIENDLY_BYTE_BUF != null ? Reflection.getConstructor(REGISTRY_FRIENDLY_BYTE_BUF, ByteBuf.class, REGISTRY_ACCESS) : null;
         immutableRegistryAccess = IMMUTABLE_REGISTRY_ACCESS != null ? Reflection.getConstructor(IMMUTABLE_REGISTRY_ACCESS, List.class) : null;
@@ -264,8 +264,6 @@ public final class PacketStand implements IStand {
         DWO_CUSTOM_NAME_VISIBLE = Reflection.getFieldValue(Reflection.getField(ENTITY, DATA_WATCHER_OBJECT, dwoData.customNameVisible, true, "DATA_CUSTOM_NAME_VISIBLE"));
         DWO_ARMOR_STAND_DATA = Reflection.getFieldValue(Reflection.getField(ENTITY_ARMOR_STAND, DATA_WATCHER_OBJECT, dwoData.armorStandData, true, "DATA_CLIENT_FLAGS"));
         DWO_HEAD_POSE = Reflection.getFieldValue(Reflection.getField(ENTITY_ARMOR_STAND, DATA_WATCHER_OBJECT, dwoData.headPose, true, "DATA_HEAD_POSE"));
-        
-        
         DWO_BODY_POSE = Reflection.getFieldValue(Reflection.getField(ENTITY_ARMOR_STAND, DATA_WATCHER_OBJECT, dwoData.bodyPose, true, "DATA_BODY_POSE"));
         DWO_LEFT_ARM_POSE = Reflection.getFieldValue(Reflection.getField(ENTITY_ARMOR_STAND, DATA_WATCHER_OBJECT, dwoData.leftArmPose, true, "DATA_LEFT_ARM_POSE"));
         DWO_RIGHT_ARM_POSE = Reflection.getFieldValue(Reflection.getField(ENTITY_ARMOR_STAND, DATA_WATCHER_OBJECT, dwoData.rightArmPose, true, "DATA_RIGHT_ARM_POSE"));
@@ -274,9 +272,9 @@ public final class PacketStand implements IStand {
         ZERO = Reflection.getFieldValue(Reflection.getField(VEC_3D, VEC_3D, "a", true, "b", "c", "ZERO"));
         ARMOR_STAND = getArmorStandType();
         ENTITY_TYPE_ID = getEntityTypeId();
-        ITEM = XReflection.supports(1, 20, 6) ? Reflection.getFieldValue(Reflection.getField(BUILT_IN_REGISTRIES, DEFAULTED_REGISTRY, "h", true, "ITEM")) : null;
+        ITEM = XReflection.supports(20, 6) ? Reflection.getFieldValue(Reflection.getField(BUILT_IN_REGISTRIES, DEFAULTED_REGISTRY, "h", true, "ITEM")) : null;
 
-        if (XReflection.supports(1, 20, 6)) {
+        if (XReflection.supports(20, 6)) {
             DATA_COMPONENT_TYPE = Reflection.getFieldValue(Reflection.getField(
                     BUILT_IN_REGISTRIES,
                     DEFAULTED_REGISTRY,
@@ -365,7 +363,7 @@ public final class PacketStand implements IStand {
         if (teleport != null) return teleport;
 
         try {
-            if (XReflection.supports(1, 21, 2)) {
+            if (XReflection.supports(21, 2)) {
                 Object position = vec3d.invoke(location.getX(), location.getY(), location.getZ());
                 Object movement = positionMoveRotation.invoke(position, ZERO, location.getYaw(), location.getPitch());
                 return (teleport = packetEntityTeleport.invoke(id, movement, Collections.emptySet(), false));
@@ -467,7 +465,7 @@ public final class PacketStand implements IStand {
 
         try {
             Object packetSerializer;
-            if (XReflection.supports(1, 20, 6)) {
+            if (XReflection.supports(20, 6)) {
                 Object registry = immutableRegistryAccess.invoke(Arrays.asList(ITEM, DATA_COMPONENT_TYPE));
                 packetSerializer = registryFriendlyByteBuf.invoke(Unpooled.buffer(), registry);
             } else {
@@ -488,7 +486,7 @@ public final class PacketStand implements IStand {
                 writeByte.invoke(packetSerializer, (byte) serializerIndex);
                 writeInt.invoke(packetSerializer, serializerTypeId);
 
-                if (XReflection.supports(1, 20, 6)) {
+                if (XReflection.supports(20, 6)) {
                     Object codecObject = codec.invoke(serializer);
                     encode.invoke(codecObject, packetSerializer, value);
                 } else {
@@ -618,7 +616,7 @@ public final class PacketStand implements IStand {
     private static int getEntityTypeId() {
         Object ENTITY_TYPE;
 
-        if (XReflection.supports(1, 19, 3)) {
+        if (XReflection.supports(19, 3)) {
             Class<?> REGISTRIES = Reflection.getNMSClass("core.registries", "BuiltInRegistries");
 
             String field;
@@ -720,7 +718,7 @@ public final class PacketStand implements IStand {
         public static DWOData getByVersion() {
             for (DWOData data : values()) {
                 if (data != DWOData.V_MIXED
-                        && XReflection.supports(1,data.minor, data.patch)) return data;
+                        && XReflection.supports(data.minor, data.patch)) return data;
             }
             return DWOData.V_MIXED;
         }

@@ -147,7 +147,7 @@ public abstract class Vehicle implements InventoryHolder {
     private final boolean planeTargetIgnoreTamed = Config.PLANE_FIRE_SECONDARY_FOLLOW_TARGET_IGNORE_TAMED.asBool();
     private final boolean planeTargetIgnoreInvisible = Config.PLANE_FIRE_SECONDARY_FOLLOW_TARGET_IGNORE_INVISIBLE.asBool();
 
-    private final boolean ufoAbductionEnabled = XReflection.supports(1, 21, 2) && Config.UFO_ABDUCTION_ENABLED.asBool();
+    private final boolean ufoAbductionEnabled = XReflection.supports(21, 2) && Config.UFO_ABDUCTION_ENABLED.asBool();
     private final boolean ufoTargetGlowing = Config.UFO_ABDUCTION_GLOWING_ENABLED.asBool();
     private final String ufoTargetGlowingColor = Config.UFO_ABDUCTION_GLOWING_COLOR.asString(UFO_TARGET_COLOR.name());
     private final double ufoTargetRangeXZ = Config.UFO_ABDUCTION_RANGE_XZ.asDouble();
@@ -176,8 +176,8 @@ public abstract class Vehicle implements InventoryHolder {
     private static final ChatColor PLANE_TARGET_COLOR = ChatColor.RED;
     private static final ChatColor UFO_TARGET_COLOR = ChatColor.GREEN;
 
-    private static final MethodHandle SET_CAN_TICK = Reflection.getMethod(ArmorStand.class, "setCanTick", MethodType.methodType(void.class, boolean.class), false, true);
-    private static final MethodHandle SET_CAN_MOVE = Reflection.getMethod(ArmorStand.class, "setCanMove", MethodType.methodType(void.class, boolean.class), false, true);
+    private static final MethodHandle SET_CAN_TICK = Reflection.getMethod(ArmorStand.class, "setCanTick", MethodType.methodType(void.class, boolean.class), false, false);
+    private static final MethodHandle SET_CAN_MOVE = Reflection.getMethod(ArmorStand.class, "setCanMove", MethodType.methodType(void.class, boolean.class), false, false);
 
     private static final Multimap<VehicleType, Triple<String, ItemStack, ItemStack>> LIGHTS = MultimapBuilder
             .hashKeys()
@@ -192,7 +192,7 @@ public abstract class Vehicle implements InventoryHolder {
             VehicleType.PLANE, Material.FIRE_CHARGE,
             VehicleType.UFO, Material.SLIME_BALL));
 
-    public static boolean MY_VEHICLES_FEATURE_MODERN = XReflection.supports(1, 18, 1);
+    public static boolean MY_VEHICLES_FEATURE_MODERN = XReflection.supports(18, 1);
     public static final Map<VehicleType, Vector> VEHICLE_BOX = new HashMap<>();
 
     static {
@@ -351,7 +351,7 @@ public abstract class Vehicle implements InventoryHolder {
 
         // Fix visual issue since 1.20.2.
         Location standLocation = temp.getLocation().clone();
-        if (XReflection.supports(1, 20, 2)) standLocation.subtract(0.0d, 0.3d, 0.0d);
+        if (XReflection.supports(20, 2)) standLocation.subtract(0.0d, 0.3d, 0.0d);
 
         return Pair.of(world.spawn(
                 standLocation,
@@ -374,7 +374,7 @@ public abstract class Vehicle implements InventoryHolder {
                     LISTEN_MODE_IGNORE.accept(plugin, stand);
 
                     // For these armor stands, we don't want the tick (if possible).
-                    setTick(stand, true);
+                    setTick(stand, false);
                 }
         ), temp.getSettings());
     }
@@ -465,21 +465,6 @@ public abstract class Vehicle implements InventoryHolder {
         handleFuel();
 
         PlayerInput input = plugin.getInputManager().getInput(driver);
-
-        // In 1.21.2+, the new PLAYER_INPUT packet does not cause the server to auto-eject
-        // players from custom ArmorStand vehicles when shift is pressed. We must handle it.
-        if (XReflection.supports(1, 21, 2)) {
-            if (driver != null && input.dismount()) {
-                driver.leaveVehicle();
-                return;
-            }
-            for (Entity passenger : new ArrayList<>(passengers.keySet())) {
-                if (passenger instanceof Player passengerPlayer
-                        && plugin.getInputManager().getInput(passengerPlayer).dismount()) {
-                    passengerPlayer.leaveVehicle();
-                }
-            }
-        }
 
         float side = input.sideways();
 
@@ -1217,7 +1202,7 @@ public abstract class Vehicle implements InventoryHolder {
     }
 
     public boolean notAllowedHere(Location location) {
-        if (XReflection.supports(1, 18, 2)
+        if (XReflection.supports(18, 2)
                 && driver != null
                 && driver.isValid()
                 && driver.isOnline()) {

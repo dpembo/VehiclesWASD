@@ -71,7 +71,7 @@ public final class InventoryUpdate {
 
     private static final JavaPlugin PLUGIN = JavaPlugin.getProvidingPlugin(InventoryUpdate.class);
     private static final Set<String> UNOPENABLES = Sets.newHashSet("CRAFTING", "CREATIVE", "PLAYER");
-    private static final boolean SUPPORTS_19 = XReflection.supports(1, 19);
+    private static final boolean SUPPORTS_19 = XReflection.supports(19);
     private static final Object[] DUMMY_COLOR_MODIFIERS = new Object[0];
 
     static { // While we should use XReflection.ofMinecraft() instead of the deprecated methods, these will work for the moment.
@@ -121,7 +121,7 @@ public final class InventoryUpdate {
                 newTitle = newTitle.substring(0, 32);
             }
 
-            if (XReflection.supports(1, 20)) {
+            if (XReflection.supports(20)) {
                 InventoryView open = player.getOpenInventory();
                 if (UNOPENABLES.contains(open.getType().name())) return;
                 open.setTitle(newTitle);
@@ -134,7 +134,7 @@ public final class InventoryUpdate {
 
             // Create a new title.
             Object title;
-            if (XReflection.supports(1, 19)) {
+            if (XReflection.supports(19)) {
                 title = literal.invoke(newTitle);
             } else {
                 title = chatMessage.invoke(newTitle, DUMMY_COLOR_MODIFIERS);
