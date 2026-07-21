@@ -37,6 +37,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
@@ -90,7 +91,14 @@ public final class UseEntity extends SimplePacketListenerAbstract implements Lis
 
     @Override
     public void onPacketPlayReceive(@NotNull PacketPlayReceiveEvent event) {
-        if (event.getPacketType() != PacketType.Play.Client.INTERACT_ENTITY) return;
+        if (event.getPacketType() != PacketType.Play.Client.INTERACT_ENTITY){
+            plugin.getLogger().warning("Received unexpected packet type: " + event.getPacketType());
+            return;
+        }
+        else {
+            plugin.getLogger().info("Received INTERACT_ENTITY packet from player: " + event.getPlayer().toString());
+        } 
+
 
         WrapperPlayClientInteractEntity wrapper = new WrapperPlayClientInteractEntity(event);
 
@@ -116,6 +124,7 @@ public final class UseEntity extends SimplePacketListenerAbstract implements Lis
         // stale in 1.21.2+ where the PLAYER_INPUT packet replaces ENTITY_ACTION for vehicles.
         boolean sneaking = wrapper.isSneaking().orElse(player.isSneaking());
 
+        plugin.getLogger().warning("Player " + player.getName() + " interacted with entity ID " + entityId + " (left: " + left + ", sneaking: " + sneaking + ")");
         if (handlePreviews(player, entityId, left, sneaking)) return;
 
         Iterator<Vehicle> iterator = plugin.getVehicleManager().getVehicles().iterator();
