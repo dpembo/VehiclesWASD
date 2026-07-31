@@ -19,6 +19,7 @@ public enum VehicleType {
     JETSKI(Water::new),
     KART,
     PLANE,
+    FASTPLANE,
     QUAD,
     TANK,
     TRACTOR(6),
@@ -44,6 +45,10 @@ public enum VehicleType {
         this.getter = getter;
     }
 
+    public boolean isPlane() {
+        return this == PLANE || this == FASTPLANE; 
+    }
+
     public Vehicle create(VehiclesPlugin plugin, VehicleData data, Model model) {
         return getter.apply(plugin, data, model);
     }
@@ -57,7 +62,7 @@ public enum VehicleType {
     }
 
     public boolean isAirVehicle() {
-        return this == HELICOPTER || this == PLANE || this == UFO;
+        return this == HELICOPTER || this == PLANE || this == FASTPLANE || this == UFO;
     }
 
     public boolean isWaterVehicle() {

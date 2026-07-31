@@ -201,7 +201,7 @@ public final class PacketStand implements IStand {
         getIndex = Reflection.getMethod(DATA_WATCHER_OBJECT, "a", MethodType.methodType(int.class), "id");
         getTypeId = Reflection.getMethod(DATA_WATCHER_REGISTRY, "b", MethodType.methodType(int.class, DATA_WATCHER_SERIALIZER), true, true, "getSerializedId");
         serialize = XReflection.supports(1, 20, 6) ? null : Reflection.getMethod(DATA_WATCHER_SERIALIZER, "a", PACKET_DATA_SERIALIZER, Object.class);
-        byString = Reflection.getMethod(ENTITY_TYPES, "a", MethodType.methodType(Optional.class, String.class), true, true, "byString");
+        byString = Reflection.getMethod(ENTITY_TYPES, "a", MethodType.methodType(Optional.class, String.class), true, false, "byString");
         codec = XReflection.supports(1, 20, 6) ? Reflection.getMethod(DATA_WATCHER_SERIALIZER, "codec") : null;
         encode = STREAM_ENCODER != null ? Reflection.getMethod(STREAM_ENCODER, "encode", Object.class, Object.class) : null;
         getHandle = Reflection.getMethod(CRAFT_PLAYER, "getHandle");
@@ -605,10 +605,30 @@ public final class PacketStand implements IStand {
         }
     }
 
+    // private static @Nullable Object getArmorStandType() {
+    //     try {
+    //         @SuppressWarnings("deprecation") Optional<?> optional = (Optional<?>) byString.invoke(EntityType.ARMOR_STAND.getName());
+    //         return optional.orElse(null);
+    //     } catch (Throwable throwable) {
+    //         throwable.printStackTrace();
+    //         return null;
+    //     }
+    // }
+
     private static @Nullable Object getArmorStandType() {
         try {
-            @SuppressWarnings("deprecation") Optional<?> optional = (Optional<?>) byString.invoke(EntityType.ARMOR_STAND.getName());
-            return optional.orElse(null);
+            Object registry = Class.forName("net.minecraft.core.registries.BuiltInRegistries")
+                    .getField("ENTITY_TYPE")
+                    .get(null);
+
+            Class<?> idClass = Class.forName("net.minecraft.resources.Identifier");
+            Object id = idClass
+                    .getMethod("fromNamespaceAndPath", String.class, String.class)
+                    .invoke(null, "minecraft", "armor_stand");
+
+            return registry.getClass()
+                    .getMethod("getValue", idClass)
+                    .invoke(registry, id);
         } catch (Throwable throwable) {
             throwable.printStackTrace();
             return null;

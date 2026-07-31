@@ -105,7 +105,7 @@ public class Generic extends Vehicle {
 
     @Override
     public boolean canRotate() {
-        return super.canRotate() && (isOnGround() || is(VehicleType.PLANE));
+        return super.canRotate() && (isOnGround() || type.isPlane());
     }
 
     @Override
@@ -167,7 +167,7 @@ public class Generic extends Vehicle {
                 .setY(-0.5d);
 
         if (driver != null
-                && is(VehicleType.PLANE)
+                && type.isPlane()
                 && currentSpeed > liftingSpeed) {
 
             float pitch = driver.getLocation().getPitch(), alternate;
@@ -188,7 +188,7 @@ public class Generic extends Vehicle {
 
     @Override
     public boolean hasWeapon() {
-        return is(VehicleType.PLANE) || is(VehicleType.TANK);
+        return type.isPlane() || is(VehicleType.TANK);
     }
 
     private boolean breakBlock(@NotNull Block block) {

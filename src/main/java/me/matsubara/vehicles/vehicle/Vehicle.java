@@ -189,8 +189,9 @@ public abstract class Vehicle implements InventoryHolder {
             VehicleType.QUAD, 90.0f);
 
     private static final EnumMap<VehicleType, Material> TARGET_REQUIREMENT = new EnumMap<>(Map.of(
-            VehicleType.PLANE, Material.FIRE_CHARGE,
-            VehicleType.UFO, Material.SLIME_BALL));
+        VehicleType.PLANE, Material.FIRE_CHARGE,
+        VehicleType.FASTPLANE, Material.FIRE_CHARGE,
+        VehicleType.UFO, Material.SLIME_BALL));
 
     public static boolean MY_VEHICLES_FEATURE_MODERN = XReflection.supports(1, 18, 1);
     public static final Map<VehicleType, Vector> VEHICLE_BOX = new HashMap<>();
@@ -203,6 +204,7 @@ public abstract class Vehicle implements InventoryHolder {
         VEHICLE_BOX.put(VehicleType.JETSKI, new Vector(2.0d, 1.0d, 2.0d));
         VEHICLE_BOX.put(VehicleType.KART, new Vector(2.0d, 1.0d, 2.0d));
         VEHICLE_BOX.put(VehicleType.PLANE, new Vector(2.5d, 1.0d, 2.5d));
+        VEHICLE_BOX.put(VehicleType.FASTPLANE, new Vector(2.5d, 1.0d, 2.5d));
         VEHICLE_BOX.put(VehicleType.QUAD, new Vector(2.0d, 1.0d, 2.0d));
         VEHICLE_BOX.put(VehicleType.TANK, new Vector(2.0d, 1.0d, 2.0d));
         VEHICLE_BOX.put(VehicleType.TRACTOR, new Vector(2.0d, 1.0d, 2.0d));
@@ -224,6 +226,11 @@ public abstract class Vehicle implements InventoryHolder {
         ItemStack frontBikeOff = PluginUtils.createHead("933799ab30ca9b167c0ee5456c7b12b1247714ff29fb16a491e7d3a636a9aaa3", true);
 
         LIGHTS.put(VehicleType.BIKE, Triple.of("FRONT_LIGHTS_1", frontBikeOn, frontBikeOff));
+
+        ItemStack frontFastPlaneOn = PluginUtils.createHead("d9c394fd624e447d125ef3fb54d82a6fa4b0c6188e304d33352d13fbdb0c751b", true);
+        ItemStack frontFastPlaneOff = PluginUtils.createHead("933799ab30ca9b167c0ee5456c7b12b1247714ff29fb16a491e7d3a636a9aaa3", true);
+
+        LIGHTS.put(VehicleType.FASTPLANE, Triple.of("FRONT_LIGHTS_1", frontFastPlaneOn, frontFastPlaneOff));
     }
 
     public Vehicle(@NotNull VehiclesPlugin plugin, @NotNull VehicleData data, @NotNull Model model) {
@@ -561,7 +568,7 @@ public abstract class Vehicle implements InventoryHolder {
     private void handleCurrentTarget() {
         boolean ufo = is(VehicleType.UFO);
         if ((!ufo || !ufoAbductionEnabled)
-                && (!is(VehicleType.PLANE) || !planeTargetEnabled)) return;
+                && (!type.isPlane() || !planeTargetEnabled)) return;
 
         if (!canMove()
                 || driver == null
