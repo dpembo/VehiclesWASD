@@ -1203,7 +1203,7 @@ vehicles:
       lore:
         - "&7Right click to place it!"
     min-speed: -45.0
-    max-speed: 80.0
+    max-speed: 170.0
     # The speed at which the plane can begin to take off.
     lifting-speed: 60
     acceleration: 0.125
@@ -1226,7 +1226,7 @@ vehicles:
     min-speed: -45.0
     max-speed: 500.0
     # The speed at which the plane can begin to take off.
-    lifting-speed: 60
+    lifting-speed: 20
     acceleration: 0.325
     storage-rows: 6
     fuel:
