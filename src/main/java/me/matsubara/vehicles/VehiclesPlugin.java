@@ -62,7 +62,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.security.CodeSource;
 import java.util.*;
 import java.util.concurrent.*;
@@ -142,10 +144,110 @@ public final class VehiclesPlugin extends JavaPlugin {
         // System.out.println(" =============================================== ");
     }
 
+public static void dumpEntityTypeFull() {
+    try {
+        Class<?> entityType = Class.forName("net.minecraft.world.entity.EntityType");
+
+        System.out.println("===== ALL DECLARED FIELDS =====");
+        for (java.lang.reflect.Field f : entityType.getDeclaredFields()) {
+            f.setAccessible(true);
+            Object val = null;
+            try {
+                if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) {
+                    val = f.get(null);
+                }
+            } catch (Throwable ignored) {}
+            System.out.println(
+                    java.lang.reflect.Modifier.toString(f.getModifiers()) + " "
+                    + f.getType().getName() + " " + f.getName()
+                    + " = " + (val == null ? "null/non-static" : String.valueOf(val))
+            );
+        }
+
+        System.out.println("===== PUBLIC getFields() =====");
+        for (java.lang.reflect.Field f : entityType.getFields()) {
+            f.setAccessible(true);
+            Object val = null;
+            try {
+                if (java.lang.reflect.Modifier.isStatic(f.getModifiers())) {
+                    val = f.get(null);
+                }
+            } catch (Throwable ignored) {}
+            System.out.println(
+                    f.getType().getName() + " " + f.getName()
+                    + " = " + (val == null ? "null" : String.valueOf(val))
+            );
+        }
+    } catch (Throwable t) {
+        t.printStackTrace();
+    }
+}
+
+public static void dumpRegistries() {
+    try {
+        Class<?> bir = Class.forName("net.minecraft.core.registries.BuiltInRegistries");
+        System.out.println("===== BuiltInRegistries fields =====");
+        for (java.lang.reflect.Field f : bir.getDeclaredFields()) {
+            if (!java.lang.reflect.Modifier.isStatic(f.getModifiers())) continue;
+            f.setAccessible(true);
+            Object val = f.get(null);
+            System.out.println(
+                    f.getType().getSimpleName() + " " + f.getName()
+                    + " = " + (val == null ? "null" : val.getClass().getName() + " / " + val)
+            );
+        }
+    } catch (Throwable t) {
+        t.printStackTrace();
+    }
+}
+
+public static void dumpRegistryMethods() {
+    try {
+        Class<?> bir = Class.forName("net.minecraft.core.registries.BuiltInRegistries");
+        java.lang.reflect.Field f = bir.getField("ENTITY_TYPE");
+        Object registry = f.get(null);
+
+        System.out.println("Registry class: " + registry.getClass().getName());
+        for (java.lang.reflect.Method m : registry.getClass().getMethods()) {
+            Class<?>[] p = m.getParameterTypes();
+            if (p.length == 1) {
+                String pn = p[0].getSimpleName();
+                if (pn.contains("ResourceLocation")
+                        || pn.contains("Identifier")
+                        || pn.contains("ResourceKey")
+                        || pn.equals("String")
+                        || pn.contains("Holder")) {
+                    System.out.println(
+                            m.getReturnType().getSimpleName() + " "
+                            + m.getName() + "(" + pn + ")"
+                    );
+                }
+            }
+        }
+    } catch (Throwable t) {
+        t.printStackTrace();
+    }
+}
+
     @Override
     public void onEnable() {
+        String logo="\r\n";
+        logo += """
+     -------|------- 
+        __/[ ] \\___    VehiclesWSAD 
+X=======[  ___     ]>  (c)2026 pembo.co.uk
+        \\___/______/
+          __/ \\__
+          
+      """;
         Logger logger = getLogger();
-
+        logger.info(logo);
+        logger.info("Initializing VehiclesWSAD v" + getDescription().getVersion() + "...");
+        // logger.info("DUMPING ENTITY TYPE -------------------------");
+        // dumpEntityTypeFull();
+        // dumpRegistries();
+        // dumpRegistryMethods();
+        // logger.info("---------------------------------------------");
         // Disable the plugin if the server version is older than 1.17.
         PluginManager pluginManager = getServer().getPluginManager();
         if (!XReflection.supports(1, 17)) {

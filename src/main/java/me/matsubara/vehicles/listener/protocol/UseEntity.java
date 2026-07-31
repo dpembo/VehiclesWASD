@@ -92,11 +92,11 @@ public final class UseEntity extends SimplePacketListenerAbstract implements Lis
     @Override
     public void onPacketPlayReceive(@NotNull PacketPlayReceiveEvent event) {
         if (event.getPacketType() != PacketType.Play.Client.INTERACT_ENTITY){
-            plugin.getLogger().warning("Received unexpected packet type: " + event.getPacketType());
+            //plugin.getLogger().warning("Received unexpected packet type: " + event.getPacketType());
             return;
         }
         else {
-            plugin.getLogger().info("Received INTERACT_ENTITY packet from player: " + event.getPlayer().toString());
+            //plugin.getLogger().info("Received INTERACT_ENTITY packet from player: " + event.getPlayer().toString());
         } 
 
 
@@ -124,7 +124,7 @@ public final class UseEntity extends SimplePacketListenerAbstract implements Lis
         // stale in 1.21.2+ where the PLAYER_INPUT packet replaces ENTITY_ACTION for vehicles.
         boolean sneaking = wrapper.isSneaking().orElse(player.isSneaking());
 
-        plugin.getLogger().warning("Player " + player.getName() + " interacted with entity ID " + entityId + " (left: " + left + ", sneaking: " + sneaking + ")");
+        //plugin.getLogger().warning("Player " + player.getName() + " interacted with entity ID " + entityId + " (left: " + left + ", sneaking: " + sneaking + ")");
         if (handlePreviews(player, entityId, left, sneaking)) return;
 
         Iterator<Vehicle> iterator = plugin.getVehicleManager().getVehicles().iterator();
