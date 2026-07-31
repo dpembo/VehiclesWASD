@@ -45,6 +45,9 @@ public enum VehicleType {
         this.getter = getter;
     }
 
+    public boolean isPlane() {
+        return this == PLANE || this == FASTPLANE;
+    }
     public Vehicle create(VehiclesPlugin plugin, VehicleData data, Model model) {
         return getter.apply(plugin, data, model);
     }
