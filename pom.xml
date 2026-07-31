@@ -178,6 +178,12 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <!-- GrimAC -->
+        <repository>
+            <id>grimac-snapshots</id>
+            <name>GrimAC's Maven Repository</name>
+            <url>https://repo.grim.ac/snapshots</url>
+        </repository>
 
     </repositories>
 
@@ -326,5 +332,13 @@
             <artifactId>glowingentities</artifactId>
             <version>1.4.10</version>
         </dependency>
+        <!-- GrimAC -->
+        <dependency>
+            <groupId>ac.grim.grimac</groupId>
+            <artifactId>GrimAPI</artifactId>
+            <version>1.3.2.1</version>
+            <scope>provided</scope>
+        </dependency>
+  
     </dependencies>
 </project>
