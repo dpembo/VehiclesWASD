@@ -22,6 +22,7 @@ import me.matsubara.vehicles.files.Messages;
 import me.matsubara.vehicles.files.config.ConfigValue;
 import me.matsubara.vehicles.hook.AVExtension;
 import me.matsubara.vehicles.hook.EssentialsExtension;
+import me.matsubara.vehicles.hook.GrimHook;
 import me.matsubara.vehicles.hook.WGExtension;
 import me.matsubara.vehicles.hook.economy.EconomyExtension;
 import me.matsubara.vehicles.hook.economy.PlayerPointsExtension;
@@ -82,6 +83,7 @@ public final class VehiclesPlugin extends JavaPlugin {
     private InputManager inputManager;
     private StandManager standManager;
     private VehicleManager vehicleManager;
+    private GrimHook grimHook;
 
     private Messages messages;
     private @Getter(AccessLevel.NONE) GlowingEntities glowingEntities;
@@ -282,6 +284,9 @@ X=======[  ___     ]>  (c)2026 pembo.co.uk
         inputManager = new InputManager(this);
         standManager = new StandManager(this);
         vehicleManager = new VehicleManager(this);
+
+        grimHook = new GrimHook(this);
+        grimHook.register();
 
         resetEconomyProvider();
         essentialsExtension = registerExtension(EssentialsExtension.class, "Essentials");

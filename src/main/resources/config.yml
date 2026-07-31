@@ -1619,3 +1619,42 @@ gui:
           - "&eLock: %lock%"
           - "&7"
           - "&6Click to pick up the vehicle."
+grim-exemption:
+  enabled: false
+  checks:
+    # Applied to every vehicle type. Check ids are version-dependent - cross-reference whatever's actually
+    # firing in your Grim alerts/log against https://github.com/GrimAnticheat/Grim/wiki/Checks before relying
+    # on these defaults.
+    # Other types: simulation, prediction, offsethandler, timer, timerlimit, groundspoof, nofall, fly, airliquid, speed, vehicle, vehiclea, vehicleb, vehiclec, vehicled, vehiclee, vehiclef, knockback, explosion, negativetimer, badpackets
+    default:
+      - simulation
+      - prediction
+      - offsethandler
+      - timer
+      - timerlimit
+      - groundspoof
+      - nofall
+      - speed
+      - vehicle
+      - vehiclea
+      - vehicleb
+      - vehiclec
+      - vehicled
+      - vehiclee
+      - vehiclef
+    # Extra checks added on top of "default", only for the listed vehicle type. Useful for checks that only
+    # make sense to relax for some vehicles, e.g. fly/air-liquid for things that hover or climb, but not for
+    # cars/boats/tanks that should still be caught if they somehow leave the ground.
+    per-vehicle:
+      helicopter:
+        - fly
+        - airliquid
+      plane:
+        - fly
+        - airliquid
+      fastplane:
+        - fly
+        - airliquid
+      ufo:
+        - fly
+        - airliquid

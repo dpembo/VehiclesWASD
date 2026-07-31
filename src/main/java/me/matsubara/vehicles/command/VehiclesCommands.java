@@ -147,6 +147,8 @@ public class VehiclesCommands implements CommandExecutor, TabCompleter {
                 plugin.reloadBreakBlocks();
                 plugin.reloadRecipes();
 
+                if (plugin.getGrimHook() != null) plugin.getGrimHook().reload();
+
                 manager.getModels().clear();
 
                 // Save data and remove vehicle(s) from world.
