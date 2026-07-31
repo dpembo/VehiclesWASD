@@ -568,7 +568,7 @@ public abstract class Vehicle implements InventoryHolder {
     private void handleCurrentTarget() {
         boolean ufo = is(VehicleType.UFO);
         if ((!ufo || !ufoAbductionEnabled)
-                && (!is(VehicleType.PLANE) || !planeTargetEnabled)) return;
+                && (!type.isPlane() || !planeTargetEnabled)) return;
 
         if (!canMove()
                 || driver == null
