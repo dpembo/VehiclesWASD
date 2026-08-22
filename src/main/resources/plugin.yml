@@ -18,6 +18,8 @@ softdepend:
   - Vault
   - Essentials
   - PlayerPoints
+  - Chunky
+  - ChunkyBorder
   - CMI
   - CMIEInjector
   - GrimAC

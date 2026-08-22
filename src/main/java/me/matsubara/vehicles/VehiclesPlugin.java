@@ -21,6 +21,7 @@ import me.matsubara.vehicles.files.Config;
 import me.matsubara.vehicles.files.Messages;
 import me.matsubara.vehicles.files.config.ConfigValue;
 import me.matsubara.vehicles.hook.AVExtension;
+import me.matsubara.vehicles.hook.ChunkyBorderExtension;
 import me.matsubara.vehicles.hook.EssentialsExtension;
 import me.matsubara.vehicles.hook.GrimHook;
 import me.matsubara.vehicles.hook.WGExtension;
@@ -116,6 +117,7 @@ public final class VehiclesPlugin extends JavaPlugin {
     EssentialsExtension essentialsExtension;
     EconomyExtension<?> economyExtension;
     WGExtension wgExtension;
+    ChunkyBorderExtension chunkyBorderExtension;
     boolean patheticEnabled;
 
     private static final List<String> GUI_TYPES = List.of("vehicle", "shop", "shop-confirm", "customizations");
@@ -290,6 +292,7 @@ X=======[  ___     ]>  (c)2026 pembo.co.uk
 
         resetEconomyProvider();
         essentialsExtension = registerExtension(EssentialsExtension.class, "Essentials");
+        chunkyBorderExtension = registerExtension(ChunkyBorderExtension.class, "ChunkyBorder");
 
         reloadExtraTags();
         reloadFuelItems();

@@ -22,6 +22,7 @@ import me.matsubara.vehicles.VehiclesPlugin;
 import me.matsubara.vehicles.data.PlayerInput;
 import me.matsubara.vehicles.data.SoundWrapper;
 import me.matsubara.vehicles.files.Config;
+import me.matsubara.vehicles.hook.ChunkyBorderExtension;
 import me.matsubara.vehicles.hook.WGExtension;
 import me.matsubara.vehicles.manager.StandManager;
 import me.matsubara.vehicles.manager.VehicleManager;
@@ -102,6 +103,10 @@ public abstract class Vehicle implements InventoryHolder {
     private ModelLocation tractorMuffler;
     protected LivingEntity currentTarget;
     private Laser.GuardianLaser laser;
+    // Set when GuardianBeam's reflection util fails to initialize on the running server
+    // version (e.g. Paper builds whose version string GuardianBeam can't parse yet).
+    // Prevents retrying (and re-throwing/re-logging) every 10 ticks once it's known to fail.
+    private static volatile boolean guardianLaserUnsupported;
     private final Set<Player> glowing = new HashSet<>();
     private int targetDistance = Integer.MIN_VALUE;
     private Float wheelRotation;
@@ -140,6 +145,7 @@ public abstract class Vehicle implements InventoryHolder {
     private final boolean rotateWheels = Config.ROTATE_WHEELS.asBool();
 
     private final boolean planeTargetEnabled = Config.PLANE_FIRE_SECONDARY_FOLLOW_TARGET_ENABLED.asBool();
+    private final boolean planeTargetLaserEnabled = Config.PLANE_FIRE_SECONDARY_FOLLOW_TARGET_LASER_ENABLED.asBool();
     private final boolean planeTargetGlowing = Config.PLANE_FIRE_SECONDARY_FOLLOW_TARGET_GLOWING_ENABLED.asBool();
     private final String planeTargetGlowingColor = Config.PLANE_FIRE_SECONDARY_FOLLOW_TARGET_GLOWING_COLOR.asString(PLANE_TARGET_COLOR.name());
     private final double planeTargetRange = Config.PLANE_FIRE_SECONDARY_FOLLOW_TARGET_RANGE.asDouble();
@@ -600,16 +606,36 @@ public abstract class Vehicle implements InventoryHolder {
 
         currentTarget = closest;
 
-        try {
-            if (!alreadyExist) {
-                laser = new Laser.GuardianLaser(driver.getLocation(), currentTarget, -1, 50);
-                laser.start(plugin);
-                laser.attachEndEntity(currentTarget);
-            } else {
-                laser.moveStart(driver.getLocation());
+        if (planeTargetLaserEnabled && !guardianLaserUnsupported) {
+            try {
+                if (!alreadyExist || laser == null) {
+                    laser = new Laser.GuardianLaser(driver.getLocation(), currentTarget, -1, 50);
+                    laser.start(plugin);
+                    laser.attachEndEntity(currentTarget);
+                } else {
+                    laser.moveStart(driver.getLocation());
+                }
+            } catch (ReflectiveOperationException exception) {
+                exception.printStackTrace();
+            } catch (IllegalArgumentException exception) {
+                // Thrown by GuardianBeam's version parser (fr.skytasul.reflection.Version#parse)
+                // when it doesn't yet recognise the server's version string. Not fixable on our
+                // end short of patching/upgrading the bundled GuardianBeam dependency, so disable
+                // the laser effect for the rest of this server's uptime instead of re-throwing an
+                // uncaught exception (and NPEing on the next tick, since `laser` never gets set)
+                // every 10 ticks for as long as a vehicle has a target.
+                guardianLaserUnsupported = true;
+                plugin.getLogger().warning(
+                        "Disabling vehicle target lasers: GuardianBeam could not initialize for this server version (" +
+                                exception.getMessage() + "). This is an upstream GuardianBeam/Paper-version-string " +
+                                "compatibility issue, not a VehiclesWASD bug; update the guardianbeam dependency once " +
+                                "an upstream release supports this server version.");
+                laser = null;
             }
-        } catch (ReflectiveOperationException exception) {
-            exception.printStackTrace();
+        } else if (laser != null) {
+    // Config disabled (or unsupported) while a laser was already running
+            laser.stop();
+            laser = null;
         }
 
         if (!(ufo ? ufoTargetGlowing : planeTargetGlowing)) return;
@@ -1234,6 +1260,9 @@ public abstract class Vehicle implements InventoryHolder {
 
         WorldBorder border = velocityStand.getWorld().getWorldBorder();
         if (!border.isInside(location)) return true;
+
+        ChunkyBorderExtension chunkyBorderExtension = plugin.getChunkyBorderExtension();
+        if (chunkyBorderExtension != null && chunkyBorderExtension.tooCloseToBorder(location)) return true;
 
         WGExtension wgExtension = plugin.getWgExtension();
         if (wgExtension == null) return false;

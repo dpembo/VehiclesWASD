@@ -22,6 +22,13 @@ public class Config {
     public final ConfigValue STOP_VEHICLE_ON_DISMOUNT = new ConfigValue("stop-vehicle-on-dismount");
     public final ConfigValue SAFE_DISMOUNT_TELEPORT = new ConfigValue("safe-dismount-teleport");
 
+    // ChunkyBorder integration.
+    // How many blocks before ChunkyBorder's configured border a vehicle should be stopped.
+    // ChunkyBorder's own teleport-on-border-hit only moves the seat entity + player, and fights
+    // with this plugin's own tick-based repositioning of the rest of the model, so we avoid the
+    // interaction entirely by never letting a vehicle actually reach the border.
+    public final ConfigValue CHUNKY_BORDER_BUFFER = new ConfigValue("chunky-border.stop-buffer");
+
     // Performance.
     public final ConfigValue VEHICLE_SPAWN_DELAY = new ConfigValue("performance.vehicle-spawn-delay");
     public final ConfigValue ROTATE_WHEELS = new ConfigValue("performance.rotate-wheels");
@@ -97,6 +104,7 @@ public class Config {
 
     // Play secondary weapon special ability.
     public final ConfigValue PLANE_FIRE_SECONDARY_FOLLOW_TARGET_ENABLED = new ConfigValue("plane-fire.secondary.follow-target.enabled");
+    public final ConfigValue PLANE_FIRE_SECONDARY_FOLLOW_TARGET_LASER_ENABLED = new ConfigValue("plane-fire.secondary.follow-target.laser-enabled");
     public final ConfigValue PLANE_FIRE_SECONDARY_FOLLOW_TARGET_RANGE = new ConfigValue("plane-fire.secondary.follow-target.range");
     public final ConfigValue PLANE_FIRE_SECONDARY_FOLLOW_TARGET_IGNORE_WATER = new ConfigValue("plane-fire.secondary.follow-target.ignore.water");
     public final ConfigValue PLANE_FIRE_SECONDARY_FOLLOW_TARGET_IGNORE_TAMED = new ConfigValue("plane-fire.secondary.follow-target.ignore.tamed");

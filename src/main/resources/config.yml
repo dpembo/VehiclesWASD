@@ -137,6 +137,14 @@ stop-vehicle-on-dismount: false
 # If true, when a player gets off a vehicle, the player will be teleported to the ground to prevent falling damage.
 safe-dismount-teleport: false
 
+# Only used if the ChunkyBorder plugin is installed.
+chunky-border:
+  # How many blocks before ChunkyBorder's configured border a vehicle should be stopped.
+  # ChunkyBorder's border-hit teleport only moves the seat + player, and fights with this
+  # plugin's own tick-based repositioning of the rest of the vehicle model, so vehicles are
+  # stopped short of the border entirely instead of letting the two plugins fight over it.
+  stop-buffer: 10
+
 # Here you can configure what is related to key mapping.
 # NOTE: If @{open-menu} and @{shoot-weapon} have the same mapping, @{shoot-weapon} will take priority.
 vehicle-keybinds:
@@ -242,6 +250,9 @@ plane-fire:
     follow-target:
       # Whether this function is enabled.
       enabled: true
+      # Whether to show the guardian laser beam to the locked target.
+      # Set to false to disable the visual entirely (target lock + glowing can still work).
+      laser-enabled: true
       # The range of blocks to search for entities.
       range: 64
       # Here you can choose which entities to ignore.

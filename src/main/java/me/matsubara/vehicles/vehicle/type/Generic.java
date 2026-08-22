@@ -181,7 +181,10 @@ public class Generic extends Vehicle {
         }
 
         Location temp = velocityStand.getLocation().clone().add(velocity);
-        if (notAllowedHere(temp)) return;
+        if (notAllowedHere(temp)) {
+            velocityStand.setVelocity(new Vector(0.0d, 0.0d, 0.0d));
+            return;
+        }
 
         velocityStand.setVelocity(velocity);
     }
