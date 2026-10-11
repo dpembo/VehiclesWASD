@@ -24,6 +24,8 @@ commands:
     specify-type: "&cYou must specify a vehicle type!"
     type-not-found: "&cThis type of vehicle doesn't exist!"
     shop-not-found: "&cThe shop version was not found, using the default one."
+  pickup:
+    not-looking: "&cYou must be looking at a vehicle (within 8 blocks) to pick it up!"
   customization:
     not-driving: "&cYou must be driving a vehicle to use this command!"
     no-customizations: "&cThis vehicle has no customizations applied!"
@@ -54,6 +56,7 @@ vehicle:
     vehicle-in-lava: "&cYou cannot enter a vehicle stuck in lava."
     vehicle-locked: "&cThis vehicle is locked and you are not the owner."
     vehicle-full: "&cThis vehicle is already full!"
+    vehicle-loading: "&eThis vehicle is still loading, please wait a moment."
     allowed-as-passenger: "&cThis vehicle is locked and you are not the owner, you can only sit as a passenger."
     occupied-by-unknown: "&cYour vehicle is occupied, shift + right click to kick him out of the vehicle."
     occupant-kicked: "&cThe occupant has been ejected from your vehicle!"

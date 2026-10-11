@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import me.matsubara.vehicles.VehiclesPlugin;
+import me.matsubara.vehicles.files.Config;
 import net.md_5.bungee.api.ChatColor;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,13 +14,16 @@ import org.bukkit.Bukkit;
 import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionType;
 import org.bukkit.profile.PlayerProfile;
 import org.bukkit.profile.PlayerTextures;
@@ -38,6 +42,7 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.net.URL;
@@ -164,6 +169,37 @@ public final class PluginUtils {
         applySkin(meta, url, isMCUrl);
         item.setItemMeta(meta);
 
+        return item;
+    }
+
+    private static final Method SET_ITEM_MODEL = findSetItemModel();
+
+    private static @Nullable Method findSetItemModel() {
+        try {
+            return ItemMeta.class.getMethod("setItemModel", NamespacedKey.class);
+        } catch (NoSuchMethodException exception) {
+            return null;
+        }
+    }
+
+    // Creates the head of a model part. With the resource pack enabled, the head uses the custom model
+    // "vehicleswasd:head/<texture>" (included in the resource-pack folder) instead of downloading the skin.
+    public static @Nullable ItemStack createModelHead(String texture) {
+        ItemStack item = createHead(texture, true);
+        if (item == null || !Config.RESOURCE_PACK_ENABLED.asBool(false)) return item;
+
+        if (SET_ITEM_MODEL == null) {
+            JavaPlugin.getPlugin(VehiclesPlugin.class).getLogger().warning("resource-pack.enabled requires Minecraft 1.21.2+, using skins instead.");
+            return item;
+        }
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+
+        try {
+            SET_ITEM_MODEL.invoke(meta, new NamespacedKey("vehicleswasd", "head/" + texture.toLowerCase(Locale.ROOT)));
+            item.setItemMeta(meta);
+        } catch (ReflectiveOperationException ignored) {}
         return item;
     }
 

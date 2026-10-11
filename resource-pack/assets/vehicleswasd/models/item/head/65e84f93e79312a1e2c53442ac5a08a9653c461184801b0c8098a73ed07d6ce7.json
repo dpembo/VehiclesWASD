@@ -1,0 +1,33 @@
+{
+  "texture_size": [64, 64],
+  "textures": {
+    "particle": "vehicleswasd:item/head/65e84f93e79312a1e2c53442ac5a08a9653c461184801b0c8098a73ed07d6ce7",
+    "skin": "vehicleswasd:item/head/65e84f93e79312a1e2c53442ac5a08a9653c461184801b0c8098a73ed07d6ce7"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": {"uv": [6, 2, 8, 4], "texture": "#skin"},
+        "east": {"uv": [4, 2, 6, 4], "texture": "#skin"},
+        "south": {"uv": [2, 2, 4, 4], "texture": "#skin"},
+        "west": {"uv": [0, 2, 2, 4], "texture": "#skin"},
+        "up": {"uv": [2, 0, 4, 2], "texture": "#skin"},
+        "down": {"uv": [4, 0, 6, 2], "texture": "#skin"}
+      }
+    },
+    {
+      "from": [-0.5, -0.5, -0.5],
+      "to": [16.5, 16.5, 16.5],
+      "faces": {
+        "north": {"uv": [14, 2, 16, 4], "texture": "#skin"},
+        "east": {"uv": [12, 2, 14, 4], "texture": "#skin"},
+        "south": {"uv": [10, 2, 12, 4], "texture": "#skin"},
+        "west": {"uv": [8, 2, 10, 4], "texture": "#skin"},
+        "up": {"uv": [10, 0, 12, 2], "texture": "#skin"},
+        "down": {"uv": [12, 0, 14, 2], "texture": "#skin"}
+      }
+    }
+  ]
+}

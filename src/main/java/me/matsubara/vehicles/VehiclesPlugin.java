@@ -238,7 +238,7 @@ public static void dumpRegistryMethods() {
         String logo="\r\n";
         logo += """
      -------|------- 
-        __/[ ] \\___    VehiclesWSAD 
+        __/[ ] \\___    VehiclesWASD 
 X=======[  ___     ]>  (c)2026 pembo.co.uk
         \\___/______/
           __/ \\__
@@ -246,7 +246,7 @@ X=======[  ___     ]>  (c)2026 pembo.co.uk
       """;
         Logger logger = getLogger();
         logger.info(logo);
-        logger.info("Initializing VehiclesWSAD v" + getDescription().getVersion() + "...");
+        logger.info("Initializing VehiclesWASD v" + getDescription().getVersion() + "...");
         // logger.info("DUMPING ENTITY TYPE -------------------------");
         // dumpEntityTypeFull();
         // dumpRegistries();

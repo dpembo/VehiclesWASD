@@ -334,6 +334,9 @@ public final class UseEntity extends SimplePacketListenerAbstract implements Lis
     private void handleOutsideVehicleInteract(@NotNull Player player, @NotNull Vehicle vehicle, Iterator<Vehicle> iterator, boolean left, boolean sneaking) {
         if (vehicle.isRemoved()) return;
 
+        // Packets are handled async, a duplicated interaction could be queued after the player already sat.
+        if (!left && !sneaking && (player.isInsideVehicle() || vehicle.isDriver(player) || vehicle.isPassenger(player))) return;
+
         UUID playerUUID = player.getUniqueId();
         Messages messages = plugin.getMessages();
 
@@ -376,6 +379,11 @@ public final class UseEntity extends SimplePacketListenerAbstract implements Lis
                 if (kickDriverIfPossible(player, vehicle)) return;
                 runTask(() -> new VehicleGUI(plugin, player, vehicle));
             }
+            return;
+        }
+
+        if (!vehicle.isReady()) {
+            messages.send(player, Messages.Message.VEHICLE_LOADING);
             return;
         }
 

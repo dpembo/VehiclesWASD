@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import me.matsubara.vehicles.VehiclesPlugin;
 import me.matsubara.vehicles.data.PlayerInput;
+import me.matsubara.vehicles.manager.StandManager;
 import me.matsubara.vehicles.model.Model;
 import me.matsubara.vehicles.model.stand.IStand;
 import me.matsubara.vehicles.model.stand.StandSettings;
@@ -36,6 +37,20 @@ public class UpAndDown extends Vehicle {
         currentSpeed = downSpeed;
         if (velocityStand != null && velocityStand.isValid()) {
             velocityStand.setVelocity(new Vector(0.0d, -0.5d, 0.0d));
+        }
+    }
+
+    @Override
+    protected void releaseStaleOccupants() {
+        super.releaseStaleOccupants();
+
+        // Transfers are resolved synchronously by the dismount event, anything left here is stale.
+        transfers.clear();
+
+        if (outsideDriver != null && !isSeated(outsideDriver)) {
+            Player stale = outsideDriver;
+            outsideDriver = null;
+            getPlugin().getStandManager().handleStandRender(this, stale, stale.getLocation(), StandManager.HandleCause.SPAWN);
         }
     }
 

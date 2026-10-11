@@ -53,6 +53,10 @@ public class ConfigValue {
         return PluginUtils.translate(asString());
     }
 
+    public boolean asBool(boolean defaultValue) {
+        return getValue(Boolean.class, defaultValue);
+    }
+
     public boolean asBool() {
         return getValue(Boolean.class);
     }

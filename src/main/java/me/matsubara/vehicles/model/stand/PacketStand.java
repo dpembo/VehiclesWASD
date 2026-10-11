@@ -406,6 +406,39 @@ public final class PacketStand implements IStand {
         sendLocation(player);
     }
 
+    // Updates the location and returns the teleport packet without sending it, so many parts can be sent together.
+    public @Nullable Object prepareTeleport(Location location) {
+        if (invalidTeleport(location)) return null;
+        return createTeleport();
+    }
+
+    private static final MethodHandle BUNDLE = findBundleConstructor();
+
+    private static @Nullable MethodHandle findBundleConstructor() {
+        try {
+            Class<?> bundle = Class.forName("net.minecraft.network.protocol.game.ClientboundBundlePacket");
+            return java.lang.invoke.MethodHandles.publicLookup()
+                    .findConstructor(bundle, MethodType.methodType(void.class, Iterable.class))
+                    .asType(MethodType.methodType(Object.class, Iterable.class));
+        } catch (Throwable throwable) {
+            return null;
+        }
+    }
+
+    // Packets inside a bundle are applied by the client in the same tick, otherwise parts could be split across two ticks.
+    public void sendBundled(Collection<Player> players, List<Object> packets) {
+        if (packets.isEmpty() || players.isEmpty()) return;
+
+        Object[] array = packets.toArray();
+        if (BUNDLE != null) {
+            try {
+                sendPacket(players, BUNDLE.invoke((Iterable<Object>) List.copyOf(packets)));
+                return;
+            } catch (Throwable ignored) {}
+        }
+        sendPacket(players, array);
+    }
+
     private boolean invalidTeleport(@NotNull Location location) {
         World world = location.getWorld();
         if (this.world != null && (world == null || !Objects.equals(world, this.world))) return true;

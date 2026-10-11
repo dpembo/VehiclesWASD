@@ -116,10 +116,15 @@ public final class StandManager implements Listener {
         // Spawn the entire model in another thread.
         plugin.getPool().execute(() -> {
             for (IStand stand : model.getStands()) {
-                if (show) {
-                    stand.spawn(player);
-                } else {
-                    stand.destroy(player);
+                // One failing part must not leave the rest of the model (e.g. the tail) unspawned.
+                try {
+                    if (show) {
+                        stand.spawn(player);
+                    } else {
+                        stand.destroy(player);
+                    }
+                } catch (Exception exception) {
+                    plugin.getLogger().warning("Failed to " + (show ? "spawn" : "destroy") + " a model part: " + exception);
                 }
             }
         });

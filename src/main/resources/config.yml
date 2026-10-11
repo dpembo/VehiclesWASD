@@ -54,6 +54,12 @@ config-version: 1
 # BUKKIT: armor stands will be real entities in the world.
 armor-stand-type: BUKKIT
 
+# Use the custom models of the included resource pack (resource-pack folder of the plugin repository) for the heads
+# of the vehicles (wheels, lights, etc.) instead of the skins downloaded from Mojang's servers, which show up late.
+# Requires Minecraft 1.21.2+ and the resource pack to be loaded by the players. Restart the server after changing it.
+resource-pack:
+  enabled: false
+
 # The rendering distance of the vehicles.
 render-distance: 72.0
 
@@ -91,6 +97,9 @@ performance:
   vehicle-spawn-delay: 20
   # Vehicles such as CYBERCAR, KART and QUAD can rotate their front wheels. Here you can toggle this function.
   rotate-wheels: false
+  # How many seconds after spawning a vehicle should players wait before being able to get in?
+  # This gives all the parts of the model (and the clients) time to load. Set to 0 to disable.
+  vehicle-ready-delay: 1.0
 
 # Here you can customize some features of the tractor.
 tractor-features:

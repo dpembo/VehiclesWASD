@@ -1,0 +1,33 @@
+{
+  "texture_size": [64, 32],
+  "textures": {
+    "particle": "vehicleswasd:item/head/@HASH@",
+    "skin": "vehicleswasd:item/head/@HASH@"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 16, 16],
+      "faces": {
+        "north": {"uv": [6, 4, 8, 8], "texture": "#skin"},
+        "east": {"uv": [4, 4, 6, 8], "texture": "#skin"},
+        "south": {"uv": [2, 4, 4, 8], "texture": "#skin"},
+        "west": {"uv": [0, 4, 2, 8], "texture": "#skin"},
+        "up": {"uv": [2, 0, 4, 4], "texture": "#skin"},
+        "down": {"uv": [4, 0, 6, 4], "texture": "#skin"}
+      }
+    },
+    {
+      "from": [-0.5, -0.5, -0.5],
+      "to": [16.5, 16.5, 16.5],
+      "faces": {
+        "north": {"uv": [14, 4, 16, 8], "texture": "#skin"},
+        "east": {"uv": [12, 4, 14, 8], "texture": "#skin"},
+        "south": {"uv": [10, 4, 12, 8], "texture": "#skin"},
+        "west": {"uv": [8, 4, 10, 8], "texture": "#skin"},
+        "up": {"uv": [10, 0, 12, 4], "texture": "#skin"},
+        "down": {"uv": [12, 0, 14, 4], "texture": "#skin"}
+      }
+    }
+  ]
+}

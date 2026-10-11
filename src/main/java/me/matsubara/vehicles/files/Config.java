@@ -31,6 +31,8 @@ public class Config {
 
     // Performance.
     public final ConfigValue VEHICLE_SPAWN_DELAY = new ConfigValue("performance.vehicle-spawn-delay");
+    public final ConfigValue RESOURCE_PACK_ENABLED = new ConfigValue("resource-pack.enabled");
+    public final ConfigValue VEHICLE_READY_DELAY = new ConfigValue("performance.vehicle-ready-delay");
     public final ConfigValue ROTATE_WHEELS = new ConfigValue("performance.rotate-wheels");
 
     // Tractor.

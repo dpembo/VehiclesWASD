@@ -64,6 +64,7 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.awt.Color;
 import java.lang.invoke.MethodHandle;
+import java.lang.reflect.Method;
 import java.lang.invoke.MethodType;
 import java.util.*;
 import java.util.List;
@@ -142,6 +143,7 @@ public abstract class Vehicle implements InventoryHolder {
     private final boolean pickUpNearbyEntities = Config.PICK_UP_NEARBY_ENTITIES.asBool();
     private final int tractorParticleDelay = Config.TRACTOR_PARTICLE_DELAY.asInt();
     private final int vehicleSpawnDelay = Math.max(1, Config.VEHICLE_SPAWN_DELAY.asInt());
+    private final long readyAt = System.currentTimeMillis() + (long) (Math.max(0.0d, Config.VEHICLE_READY_DELAY.asDouble()) * 1000.0d);
     private final boolean rotateWheels = Config.ROTATE_WHEELS.asBool();
 
     private final boolean planeTargetEnabled = Config.PLANE_FIRE_SECONDARY_FOLLOW_TARGET_ENABLED.asBool();
@@ -228,13 +230,13 @@ public abstract class Vehicle implements InventoryHolder {
             LIGHTS.put(VehicleType.CYBERCAR, Triple.of("BACK_LIGHTS_" + i, carLightsOn, carLightsOff));
         }
 
-        ItemStack frontBikeOn = PluginUtils.createHead("d9c394fd624e447d125ef3fb54d82a6fa4b0c6188e304d33352d13fbdb0c751b", true);
-        ItemStack frontBikeOff = PluginUtils.createHead("933799ab30ca9b167c0ee5456c7b12b1247714ff29fb16a491e7d3a636a9aaa3", true);
+        ItemStack frontBikeOn = PluginUtils.createModelHead("d9c394fd624e447d125ef3fb54d82a6fa4b0c6188e304d33352d13fbdb0c751b");
+        ItemStack frontBikeOff = PluginUtils.createModelHead("933799ab30ca9b167c0ee5456c7b12b1247714ff29fb16a491e7d3a636a9aaa3");
 
         LIGHTS.put(VehicleType.BIKE, Triple.of("FRONT_LIGHTS_1", frontBikeOn, frontBikeOff));
 
-        ItemStack frontFastPlaneOn = PluginUtils.createHead("d9c394fd624e447d125ef3fb54d82a6fa4b0c6188e304d33352d13fbdb0c751b", true);
-        ItemStack frontFastPlaneOff = PluginUtils.createHead("933799ab30ca9b167c0ee5456c7b12b1247714ff29fb16a491e7d3a636a9aaa3", true);
+        ItemStack frontFastPlaneOn = PluginUtils.createModelHead("d9c394fd624e447d125ef3fb54d82a6fa4b0c6188e304d33352d13fbdb0c751b");
+        ItemStack frontFastPlaneOff = PluginUtils.createModelHead("933799ab30ca9b167c0ee5456c7b12b1247714ff29fb16a491e7d3a636a9aaa3");
 
         LIGHTS.put(VehicleType.FASTPLANE, Triple.of("FRONT_LIGHTS_1", frontFastPlaneOn, frontFastPlaneOff));
     }
@@ -275,7 +277,8 @@ public abstract class Vehicle implements InventoryHolder {
             String partName = location.getSettings().getPartName();
             if (!partName.startsWith("CHAIR_")) continue;
 
-            chairs.add(spawnChair(world, partName));
+            Pair<ArmorStand, StandSettings> chair = spawnChair(world, partName);
+            if (chair != null) chairs.add(chair);
         }
         chairs.sort(Comparator.comparing(pair -> pair.getValue().getPartName()));
     }
@@ -393,6 +396,11 @@ public abstract class Vehicle implements InventoryHolder {
     }
 
     public void resetRealEntities(World world) {
+        // While the chunk or its entities are still loading, spawned parts aren't valid yet; re-creating them now only loops.
+        Location base = velocityStand.getLocation();
+        if (!world.isChunkLoaded(base.getBlockX() >> 4, base.getBlockZ() >> 4)
+                || !world.getChunkAt(base.getBlockX() >> 4, base.getBlockZ() >> 4, false).isEntitiesLoaded()) return;
+
         if (!velocityStand.isValid()) {
             resetVelocityStand(world);
         }
@@ -414,8 +422,68 @@ public abstract class Vehicle implements InventoryHolder {
             clearChair(living);
 
             String partName = pair.getValue().getPartName();
-            chairs.set(i, spawnChair(world, partName));
+            Pair<ArmorStand, StandSettings> newChair = spawnChair(world, partName);
+            if (newChair != null) chairs.set(i, newChair);
         }
+    }
+
+    private boolean hasInvalidParts() {
+        for (Pair<ArmorStand, StandSettings> chair : chairs) {
+            if (!chair.getKey().isValid()) return true;
+        }
+        if (plugin.getStandManager().isBukkitArmorStand()) {
+            for (IStand temp : model.getStands()) {
+                if (temp instanceof BukkitStand stand && (stand.getStand() == null || !stand.getStand().isValid())) return true;
+            }
+        }
+        return false;
+    }
+
+    // A vehicle can only be entered once the configured delay has passed and every part of the model is actually spawned.
+    public boolean isReady() {
+        if (removed || System.currentTimeMillis() < readyAt) return false;
+        if (velocityStand == null || !velocityStand.isValid()) return false;
+
+        for (Pair<ArmorStand, StandSettings> chair : chairs) {
+            if (!chair.getKey().isValid()) return false;
+        }
+
+        if (plugin.getStandManager().isBukkitArmorStand()) {
+            for (IStand temp : model.getStands()) {
+                if (temp instanceof BukkitStand stand && (stand.getStand() == null || !stand.getStand().isValid())) return false;
+            }
+        }
+        return true;
+    }
+
+    protected boolean isSeated(@Nullable Entity entity) {
+        if (entity == null) return false;
+        if (entity instanceof Player player && !player.isOnline()) return false;
+        if (!entity.isValid()) return false;
+
+        Entity vehicle = entity.getVehicle();
+        if (vehicle == null) return false;
+
+        for (Pair<ArmorStand, StandSettings> chair : chairs) {
+            if (chair.getKey().equals(vehicle)) return true;
+        }
+        return false;
+    }
+
+    // Occupants that are registered in the vehicle but are not riding any of its chairs would keep control of it
+    // and could never dismount (no dismount event will ever fire), so we need to release them.
+    protected void releaseStaleOccupants() {
+        if (driver != null && !isSeated(driver)) {
+            Player stale = driver;
+            setDriver(null);
+            toggleUFOVisibility(stale, true);
+
+            if (stale.isOnline()) {
+                plugin.getStandManager().handleStandRender(this, stale, stale.getLocation(), StandManager.HandleCause.SPAWN);
+            }
+        }
+
+        passengers.keySet().removeIf(passenger -> !isSeated(passenger));
     }
 
     public boolean canRotate() {
@@ -454,6 +522,10 @@ public abstract class Vehicle implements InventoryHolder {
     }
 
     public void tick() {
+        tickInternal();
+    }
+
+    private void tickInternal() {
         if (atUnloadedChunk(velocityStand.getLocation())) {
             if (vehicleTick != null && !vehicleTick.isCancelled()) vehicleTick.cancel();
             return;
@@ -469,9 +541,12 @@ public abstract class Vehicle implements InventoryHolder {
         }
 
         // Every 5 seconds we want to ensure that all parts of the model are present.
-        if (tick % 100 == 0) {
+        // While the model is still incomplete, retry quickly instead of waiting for the full interval.
+        if (tick % 100 == 0 || (tick % 10 == 0 && tick < 200 && hasInvalidParts())) {
             resetRealEntities(velocityStand.getWorld());
         }
+
+        if (tick % 10 == 0) releaseStaleOccupants();
 
         if (++tick == Integer.MAX_VALUE) tick = 0;
 
@@ -791,7 +866,7 @@ public abstract class Vehicle implements InventoryHolder {
 
     private void handleNearbyEntitiesRide() {
         resetRealEntities(velocityStand.getWorld());
-        if (chairs.size() <= 1) return;
+        if (chairs.size() <= 1 || !isReady()) return;
 
         // Try to find an empty passenger seat.
         Pair<ArmorStand, StandSettings> chair = getFreePassengerSeat();
@@ -1197,11 +1272,24 @@ public abstract class Vehicle implements InventoryHolder {
 
         // First, we teleport the parts of the model (ASYNC).
         Set<Player> to = getSeeingPlayers();
-        model.getPlugin().getPool().submit(() -> handleLocations(model.getStands(),
+        // The packets are sent from the main thread, in one bundle, so the parts move together with the chairs.
+        List<Object> packets = new ArrayList<>();
+        PacketStand[] first = new PacketStand[1];
+        handleLocations(model.getStands(),
                 location,
                 IStand::getSettings,
                 IStand::getLocation,
-                (stand, temp) -> stand.teleport(to, temp)));
+                (stand, temp) -> {
+                    if (!(stand instanceof PacketStand packetStand)) {
+                        stand.teleport(to, temp);
+                        return;
+                    }
+                    Object packet = packetStand.prepareTeleport(temp);
+                    if (packet == null) return;
+                    if (first[0] == null) first[0] = packetStand;
+                    packets.add(packet);
+                });
+        if (first[0] != null) first[0].sendBundled(to, packets);
 
         // Once ALL the model parts have been teleported, we want to teleport the locations and chairs (SYNC).
         teleportLocations(location);

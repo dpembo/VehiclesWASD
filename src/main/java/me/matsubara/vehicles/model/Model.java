@@ -200,12 +200,17 @@ public final class Model {
 
         ItemStack item = null;
         if (configuration.get(defaultPath + ".material") != null) {
-            Material material = PluginUtils.getOrDefault(Material.class, configuration.getString(defaultPath + ".material", "STONE"), Material.STONE);
+            String name = configuration.getString(defaultPath + ".material", "STONE");
+            // CHAIN was renamed to IRON_CHAIN in newer versions.
+            if (name.equalsIgnoreCase("CHAIN") && PluginUtils.getOrDefault(Material.class, "CHAIN", null) == null) name = "IRON_CHAIN";
+            Material material = PluginUtils.getOrDefault(Material.class, name, Material.STONE);
             item = new ItemStack(material);
         }
 
         if (item != null && item.getType() == Material.PLAYER_HEAD && configuration.get(defaultPath + ".url") != null) {
-            item = PluginUtils.createHead(configuration.getString(defaultPath + ".url"), true);
+            String url = configuration.getString(defaultPath + ".url");
+            // The resource pack heads are only modeled for the helmet slot, held heads need the regular skull rendering.
+            item = equipment.equals(ItemSlot.HEAD.getPath()) ? PluginUtils.createModelHead(url) : PluginUtils.createHead(url, true);
         }
 
         return item;

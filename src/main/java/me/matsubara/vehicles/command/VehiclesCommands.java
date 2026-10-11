@@ -39,7 +39,7 @@ public class VehiclesCommands implements CommandExecutor, TabCompleter {
 
     private static final List<String> NONE = List.of("none");
     private static final List<String> VALID_TYPES = Stream.of(VehicleType.values()).map(VehicleType::toPath).toList();
-    private static final List<String> COMMAND_ARGS = List.of("reload", "shop", "give", "fuel", "preview", "vehicles", "customization");
+    private static final List<String> COMMAND_ARGS = List.of("reload", "shop", "give", "fuel", "preview", "vehicles", "customization", "pickup");
     private static final List<String> HELP = Stream.of(
             "&8----------------------------------------",
             "&9&lVehiclesWASD &f&oCommands &c<required> | [optional]",
@@ -50,6 +50,7 @@ public class VehiclesCommands implements CommandExecutor, TabCompleter {
             "&e/vwasd preview <type> <none/shop-id> [player] &f- &7Preview a vehicle.",
             "&e/vwasd vehicles &f- &7Manage your vehicles.",
             "&e/vwasd fuel [player] &f- &7Gives a fuel can.",
+            "&e/vwasd pickup &f- &7Puts the vehicle you're looking at in your inventory.",
             "&e/vswad customization &f- &7Copy customizations from the current vehicle.",
             "&8----------------------------------------").map(PluginUtils::translate).toList();
     private static final Set<String> TYPE_LIST_USER = Set.of("give", "preview");
@@ -74,6 +75,48 @@ public class VehiclesCommands implements CommandExecutor, TabCompleter {
         }
 
         VehicleManager manager = plugin.getVehicleManager();
+
+        if (sub.equalsIgnoreCase("pickup")) {
+            Player player = isPlayer(sender);
+            if (player == null) return true;
+
+            if (notAllowed(player, "vehicleswasd.command.pickup")) return true;
+
+            Vehicle target = null;
+            double best = Double.MAX_VALUE;
+
+            org.bukkit.Location eye = player.getEyeLocation();
+            org.bukkit.util.Vector direction = eye.getDirection();
+
+            for (Vehicle vehicle : manager.getVehicles()) {
+                if (vehicle.isRemoved() || !player.getWorld().equals(vehicle.getVelocityStand().getWorld())) continue;
+
+                org.bukkit.util.RayTraceResult hit = vehicle.getBox().clone().expand(0.5d)
+                        .rayTrace(eye.toVector(), direction, 8.0d);
+                if (hit == null) continue;
+
+                double distance = hit.getHitPosition().distanceSquared(eye.toVector());
+                if (distance < best) {
+                    best = distance;
+                    target = vehicle;
+                }
+            }
+
+            if (target == null) {
+                messages.send(player, Messages.Message.PICKUP_NOT_LOOKING);
+                return true;
+            }
+
+            if (!target.isOwner(player.getUniqueId()) && !player.hasPermission("vehicleswasd.remove")) {
+                messages.send(player, Messages.Message.NOT_YOUR_VEHICLE);
+                return true;
+            }
+
+            if (target.getDriver() != null) return true;
+
+            manager.saveVehicleOnInventory(player, target);
+            return true;
+        }
 
         if (sub.equalsIgnoreCase("customization")) {
             Player player = isPlayer(sender);
